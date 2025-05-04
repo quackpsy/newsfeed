@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Custom Search</title>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* Your original styles remain unchanged */
+    body {
+      font-family: 'Proxima Nova';
+      background-color: #ffffff;
+      color: #111;
+      max-width: 1200px;
+      margin: 60px auto;
+      padding: 0 20px;
+      line-height: 1.7;
+      font-size: 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 20px;
+      position: relative;
+    }
+
+    .hamburger-menu {
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 22px;
+      height: 16px;
+    }
+
+    .hamburger-line {
+      height: 1px;
+      width: 100%;
+      background-color: #000;
+      border-radius: 1px;
+    }
+
+    .home-icon-container {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      justify-content: center;
+    }
+
+    .search-icon {
+      fill: #3452eb;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -300px;
+      width: 220px;
+      height: 100%;
+      background-color: #f5f5f5;
+      transition: left 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+    }
+
+    .sidebar.open {
+      left: 0;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 10px;
+    }
+
+    .close-sidebar {
+      font-size: 2rem;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: #333;
+      margin-left: -5px;
+    }
+
+    .sidebar h3 {
+      font-family: 'Roboto', sans-serif;
+      font-size: 1.1rem;
+      color: #3452eb;
+      margin: 20px 0 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .sidebar-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      padding-bottom: 10px;
+    }
+
+    .sidebar-links li {
+      margin-bottom: 12px;
+    }
+
+    .sidebar-links a {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: #333;
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.95rem;
+      padding: 8px 0;
+      transition: color 0.2s;
+    }
+
+    .sidebar-links a:hover {
+      color: #3452eb;
+    }
+
+    .sidebar-links img {
+      width: 16px;
+      height: 16px;
+      margin-right: 10px;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease;
+      z-index: 999;
+    }
+
+    .overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Modified search grid styles */
+    .search-grid-full {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .search-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .search-box {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      background: #fafafa;
+    }
+
+    .search-box form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .search-box input[type="text"] {
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .search-box button {
+      background-color: #3452eb;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    .search-box button:hover {
+      background-color: #2b42c6;
+    }
+
+    /* Modified section title styles - removed border-bottom */
+    .section-title {
+      margin-top: 40px;
+      margin-bottom: 20px;
+      font-family: 'Roboto', sans-serif;
+      color: #333;
+      font-weight: 500;
+      padding-bottom: 8px;
+      display: inline-block;
+    }
+
+    @media screen and (max-width: 800px) {
+      .search-grid-full {
+        grid-template-columns: 1fr;
+      }
+      .search-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media screen and (max-width: 600px) {
+      .search-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay" id="overlay"></div>
+
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="close-sidebar" onclick="toggleSidebar(false)">&times;</button>
+    </div>
+    
+    
+<h3>Main</h3>
+    <ul class="sidebar-links">
+      <li>
+        <a href="https://quackpsy.github.io/newsfeed/">
+          <img src="https://icons.iconarchive.com/icons/iconsmind/outline/512/Newspaper-icon.png"/>
+          News Feed
+        </a>
+      </li>
+      <li>
+        <a href="https://www.ebay.co.uk/sh/ovw" target="_blank">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Magnifying_glass_icon.svg/768px-Magnifying_glass_icon.svg.png"/>
+          Search Tools
+        </a>
+      </li>
+      
+    </ul>
+    
+    
+    <h3>Quick Links</h3>
+    <ul class="sidebar-links">
+      <li>
+        <a href="https://realcamera.co.uk/wp-admin/" target="_blank">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSx_dUAQejLEcjqYrzWX1h8ITz_BeF7kG6irg&s"/>
+          Website Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="https://www.ebay.co.uk/sh/ovw" target="_blank">
+          <img src="https://cdn.iconscout.com/icon/free/png-512/free-ebay-logo-icon-download-in-svg-png-gif-file-formats--technology-social-media-company-brand-vol-2-pack-logos-icons-2944843.png?f=webp&w=256"/>
+          eBay Seller Hub
+        </a>
+      </li>
+       
+    </ul>
+
+    <h3>Tools</h3>
+    <ul class="sidebar-links">
+      <li>
+        <a href="https://quackpsy.neocities.org/exposuresim" target="_blank">
+          <img src="https://icons.veryicon.com/png/o/miscellaneous/iview30-ios-style/ios-camera-6.png"/>
+          Exposure Simulator
+        </a>
+      </li>
+      <li>
+        <a href="https://apotelyt.com/camera-exif/shutter-count-finder" target="_blank">
+          <img src="https://cdn-icons-png.flaticon.com/512/2/2088.png"/>
+          Apotelyt Shutter Count
+        </a>
+      </li>
+      <li>
+        <a href="https://www.digitaltruth.com/devchart.php" target="_blank">
+          <img src="https://cdn-icons-png.freepik.com/512/15116/15116543.png"/>
+          Massive Dev Chart
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <header>
+    <div class="hamburger-menu" onclick="toggleSidebar(true)">
+      <div class="hamburger-line"></div>
+      <div class="hamburger-line"></div>
+      <div class="hamburger-line"></div>
+    </div>
+
+    <div class="home-icon-container">
+      <svg class="search-icon" width="45" height="45" viewBox="0 0 24 24">
+        <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
+      </svg>
+    </div>
+  </header>
+
+  <main>
+    <h2 class="section-title">Stock Search</h2>
+    <div class="search-grid-full">
+      <div class="search-box">
+        <form class="custom-search-form" data-search-url="https://www.ebay.co.uk/sh/lst/active?keyword=%s&source=filterbar&action=search">
+          <input type="text" placeholder="eBay Stock" />
+          <button type="submit">Search</button>
+        </form>
+      </div>
+      <div class="search-box">
+        <form class="custom-search-form" data-search-url="https://realcamera.co.uk/wp-admin/edit.php?s=%s&post_status=all&post_type=product&action=-1&layout=6538ec3764270&product_type&stock_status&product_brand&paged=1&action2=-1">
+          <input type="text" placeholder="Web Stock" />
+          <button type="submit">Search</button>
+        </form>
+      </div>
+    </div>
+
+    <h2 class="section-title">Price Checker</h2>
+    <div class="search-grid">
+      <div class="search-box">
+        <form class="custom-search-form" data-search-url="https://www.ebay.co.uk/sch/i.html?_nkw=%s&_sacat=0&_odkw=wdwd&_osacat=0&_sop=16&LH_PrefLoc=2&LH_Complete=1&LH_Sold=1">
+          <input type="text" placeholder="eBay Sold" />
+          <button type="submit">Search</button>
+        </form>
+      </div>
+      <div class="search-box">
+        <form class="custom-search-form" data-search-url="https://uk.webuy.com/sell/search?stext=%s">
+          <input type="text" placeholder="CEX Sell" />
+          <button type="submit">Search</button>
+        </form>
+      </div>
+      <div class="search-box">
+        <form class="custom-search-form" data-search-url="https://collectiblend.com/Cameras/search.php?param=%s">
+          <input type="text" placeholder="Collectiblend" />
+          <button type="submit">Search</button>
+        </form>
+      </div>
+      <div class="search-box">
+        <form class="custom-search-form" data-search-url="https://www.ebay.co.uk/sh/research?marketplace=EBAY-UK&keywords=%s&dayRange=30&endDate=1740336571415&startDate=1737744571415&categoryId=0&offset=0&limit=50&tabName=SOLD&tz=Atlantic%2FReykjavik">
+          <input type="text" placeholder="eBay Terapeak" />
+          <button type="submit">Search</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function toggleSidebar(isOpen) {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+
+      if (isOpen) {
+        sidebar.classList.add('open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      } else {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+
+    document.getElementById('overlay').addEventListener('click', function() {
+      toggleSidebar(false);
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        toggleSidebar(false);
+      }
+    });
+
+    // Add event listeners for all custom search forms
+    document.querySelectorAll('.custom-search-form').forEach(form => {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const searchTerm = encodeURIComponent(this.querySelector('input').value.trim());
+        if (searchTerm) {
+          const searchUrl = this.getAttribute('data-search-url').replace('%s', searchTerm);
+          window.open(searchUrl, '_blank');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
